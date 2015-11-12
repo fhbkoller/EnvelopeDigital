@@ -5,14 +5,14 @@ import java.util.ArrayList;
 import java.util.Map;
 
 
-public class filasLER extends Thread{
+public class FilasLER extends Thread{
     
     private Map<String,ArrayList> filas;
     private ArrayList Mensagens = new ArrayList();
     private String nomeFila = "";
 
     
-    public filasLER(String nomeFILA, Map<String,ArrayList> caixaMSG, ArrayList listaMensagens){
+    public FilasLER(String nomeFILA, Map<String,ArrayList> caixaMSG, ArrayList listaMensagens){
         super(nomeFILA);
         filas = caixaMSG;
         Mensagens = listaMensagens;

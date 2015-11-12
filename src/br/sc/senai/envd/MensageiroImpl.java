@@ -44,7 +44,7 @@ public class MensageiroImpl extends UnicastRemoteObject implements Mensageiro {
                 ArrayList listaMensagens = new ArrayList();
                 ArrayList listaMsgCripto = new ArrayList();
                 String nomeFilaDecriptado = new String(Cripto_Server.decriptarComChaveSimetrica(nomeFila, bytesChaveSimetrica));
-                filasLER lerFila = new filasLER(nomeFilaDecriptado, mapFilas, listaMensagens);
+                FilasLER lerFila = new FilasLER(nomeFilaDecriptado, mapFilas, listaMensagens);
                 lerFila.setPriority(Thread.NORM_PRIORITY);
                 lerFila.setName(nomeFilaDecriptado);
                 lerFila.start();

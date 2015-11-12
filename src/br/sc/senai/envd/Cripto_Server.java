@@ -53,7 +53,7 @@ public class Cripto_Server {
      */
     public static byte[] decriptarComChavePrivada (byte[] byteTextoCriptografado, PrivateKey chavePrivada){
         try {
-            Cipher cifra = Cipher.getInstance(Cripto_Cliente.ALGORITMO_ASSIMETRICO);
+            Cipher cifra = Cipher.getInstance(Cripto_Cliente.TIPO_ASSIMETRICO);
             cifra.init(Cipher.DECRYPT_MODE, chavePrivada);
             System.out.println("Crypto_Server: Tam bytes decriptados: " + byteTextoCriptografado.length);
             return cifra.doFinal(byteTextoCriptografado);
@@ -112,8 +112,8 @@ public class Cripto_Server {
      */
     public static byte[] encriptarComChaveSimetrica(byte[] bytesTextoPuro, byte[] bytesChaveSimetrica){
          try {
-             Cipher cifra = Cipher.getInstance(Cripto_Cliente.ALGORITMO_SIMETRICO);
-             cifra.init(Cipher.ENCRYPT_MODE, new SecretKeySpec (bytesChaveSimetrica,Cripto_Cliente.CHAVE_ALGORITMO_SIMETRICO));
+             Cipher cifra = Cipher.getInstance(Cripto_Cliente.TIPO_SIMETRICO);
+             cifra.init(Cipher.ENCRYPT_MODE, new SecretKeySpec (bytesChaveSimetrica,Cripto_Cliente.TIPO_SIMETRICO));
              return cifra.update(bytesTextoPuro);
          } catch (NoSuchAlgorithmException ex){
             System.out.println("Erro no Algoritmo de  decriptação simétrica, Verifique! " + ex.getMessage());
@@ -132,8 +132,8 @@ public class Cripto_Server {
      */
     public static byte[] decriptarComChaveSimetrica(byte[] bytesTextoCriptografado, byte[] bytesChaveSimetrica){
          try {
-             Cipher cifra = Cipher.getInstance(Cripto_Cliente.ALGORITMO_SIMETRICO);
-             SecretKeySpec chaveSimetrica = new SecretKeySpec (bytesChaveSimetrica,Cripto_Cliente.CHAVE_ALGORITMO_SIMETRICO);
+             Cipher cifra = Cipher.getInstance(Cripto_Cliente.TIPO_SIMETRICO);
+             SecretKeySpec chaveSimetrica = new SecretKeySpec (bytesChaveSimetrica,Cripto_Cliente.TIPO_SIMETRICO);
              cifra.init(Cipher.DECRYPT_MODE, chaveSimetrica);
              return cifra.update(bytesTextoCriptografado);             
          }
