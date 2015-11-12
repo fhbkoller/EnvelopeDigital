@@ -1,16 +1,13 @@
-package br.sc.senai.envd;
-
+package br.sc.senai.envd.fila;
 
 import java.util.ArrayList;
 import java.util.Map;
 
-
 public class FilasLER extends Thread{
     
-    private Map<String,ArrayList> filas;
+    private final Map<String,ArrayList> filas;
     private ArrayList Mensagens = new ArrayList();
     private String nomeFila = "";
-
     
     public FilasLER(String nomeFILA, Map<String,ArrayList> caixaMSG, ArrayList listaMensagens){
         super(nomeFILA);
@@ -18,17 +15,15 @@ public class FilasLER extends Thread{
         Mensagens = listaMensagens;
         nomeFila= nomeFILA;
     }
+    
     public void lerFilamsg(){
-        
         if(filas.containsKey(nomeFila)){
-            ArrayList temp = new ArrayList();
-            temp = filas.get(nomeFila);
-            for (int i=0;i<temp.size();i++){
-                Mensagens.add(temp.get(i));
-                String msgP = (String) temp.get(i);
+            ArrayList fila = filas.get(nomeFila);
+            for (Object mensagem : fila) {
+                Mensagens.add(mensagem);
+                String msgP = (String) mensagem;
                 System.out.println("Thread ler: " + nomeFila + " MSG: " + msgP);
             }
-
         } else {
             Mensagens.add(nomeFila + " sem Mensagens!");
            }    
@@ -36,9 +31,6 @@ public class FilasLER extends Thread{
 
     @Override
     public void run(){
-    
-            lerFilamsg();
-
+        lerFilamsg();
     }
-    
 }

@@ -1,4 +1,4 @@
-package br.sc.senai.envd;
+package br.sc.senai.envd.cripto;
 
 /**
  * Classe de trabalho que implementa os m√©todos criptogr√°ficos necess√°rios para
@@ -6,6 +6,7 @@ package br.sc.senai.envd;
  * Esta classe atende somente ao servidor de comunica√ß√£o. * 
  * 
  */
+import br.sc.senai.envd.cripto.Cripto_Cliente;
 import java.io.InputStream; 
 import java.security.InvalidKeyException;
 import java.security.Key;
@@ -59,15 +60,15 @@ public class Cripto_Server {
             return cifra.doFinal(byteTextoCriptografado);
         }
         catch ( NoSuchAlgorithmException e ) {
-            System.out.println("Classe Crypto_Server - Erro no Algoritmo RSA na decripta√ß√£o..." + e.getMessage());
+            System.out.println("Classe Crypto_Server - Erro no Algoritmo RSA na decriptaÁ„o..." + e.getMessage());
         }  catch (NoSuchPaddingException e) {
-            System.out.println("Classe Crypto_Server - Erro no Padding do RSA na decripta√ß√£o..." + e.getMessage());
+            System.out.println("Classe Crypto_Server - Erro no Padding do RSA na decriptaÁ„o..." + e.getMessage());
         } catch (InvalidKeyException e) {
-            System.out.println("Classe Crypto_Server - Erro na Chave RSA na  decripta√ß√£o..." + e.getMessage());
+            System.out.println("Classe Crypto_Server - Erro na Chave RSA na  decriptaÁ„o..." + e.getMessage());
         } catch (IllegalBlockSizeException e) {
-            System.out.println("Classe Crypto_Server - Erro no tamanho de Bloco RSA na decripta√ß√£o..." + e.getMessage());
+            System.out.println("Classe Crypto_Server - Erro no tamanho de Bloco RSA na decriptaÁ„o..." + e.getMessage());
         } catch (BadPaddingException e) {
-            System.out.println("Classe Crypto_Server - Erro Padding inv√°lido no RSA para decripta√ß√£o..." + e.getMessage());
+            System.out.println("Classe Crypto_Server - Erro Padding inv·lido no RSA para decriptaÁ„o..." + e.getMessage());
         }
         return null;
     }
@@ -100,7 +101,7 @@ public class Cripto_Server {
         keyStore.load( keystore, password.toCharArray() );
         Certificate certificado = keyStore.getCertificate( alias );
         PublicKey chavePublica = certificado.getPublicKey();
-        System.out.println("Chave P√∫blica: " + chavePublica.toString());
+        System.out.println("Chave P˙blica: " + chavePublica.toString());
         return chavePublica;
     }
     
@@ -116,11 +117,11 @@ public class Cripto_Server {
              cifra.init(Cipher.ENCRYPT_MODE, new SecretKeySpec (bytesChaveSimetrica,Cripto_Cliente.TIPO_SIMETRICO));
              return cifra.update(bytesTextoPuro);
          } catch (NoSuchAlgorithmException ex){
-            System.out.println("Erro no Algoritmo de  decripta√ß√£o sim√©trica, Verifique! " + ex.getMessage());
+            System.out.println("Erro no Algoritmo de  decriptaÁ„o simÈtrica, verifique! " + ex.getMessage());
          } catch (NoSuchPaddingException ex) {
-            System.out.println("Erro no Padding da decripta√ß√£o sim√©trica, Verifique! " + ex.getMessage());
+            System.out.println("Erro no Padding da decriptaÁ„o simÈtrica, verifique! " + ex.getMessage());
          } catch (InvalidKeyException ex) {
-            System.out.println("Erro na Chave sim√©trica, Verifique! " + ex.getMessage());
+            System.out.println("Erro na Chave simÈtrica, verifique! " + ex.getMessage());
          }
         return null;
      }
@@ -138,11 +139,11 @@ public class Cripto_Server {
              return cifra.update(bytesTextoCriptografado);             
          }
          catch (NoSuchAlgorithmException ex){
-           System.out.println("Erro no Algoritmo de  decripta√ß√£o sim√©trica, Verifique! " + ex.getMessage());
+           System.out.println("Erro no Algoritmo de  decriptaÁ„o simÈtrica, verifique! " + ex.getMessage());
          } catch (NoSuchPaddingException ex) {
-            System.out.println("Erro no Padding da decripta√ß√£o sim√©trica, Verifique! " + ex.getMessage());
+            System.out.println("Erro no Padding da decriptaÁ„o simÈtrica, verifique! " + ex.getMessage());
          } catch (InvalidKeyException ex) {
-            System.out.println("Erro na Chave sim√©trica, Verifique! " + ex.getMessage());
+            System.out.println("Erro na Chave simÈtrica, verifique! " + ex.getMessage());
          }
         return null;
      }

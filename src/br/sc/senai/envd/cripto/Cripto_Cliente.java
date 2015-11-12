@@ -1,4 +1,4 @@
-package br.sc.senai.envd;
+package br.sc.senai.envd.cripto;
 
 /**
  * Classe de serviço que implementa os métodos criptográficos necessários para o funcionamento
