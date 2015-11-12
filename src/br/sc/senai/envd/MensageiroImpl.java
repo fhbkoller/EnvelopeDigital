@@ -22,9 +22,10 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class MensageiroImpl extends UnicastRemoteObject implements Mensageiro {
-        private static Map filamsg = Collections.synchronizedMap(new HashMap<String,ArrayList>()); 
-        private static MensageiroImpl instanciaMSG = null;
-        private static byte[] chaveSim = null;
+    
+        private static Map mapFilas = Collections.synchronizedMap(new HashMap<String,ArrayList>()); 
+        private static MensageiroImpl mensageiroImpl = null;
+        private static byte[] bytesChaveSimetrica = null;
 
 	private MensageiroImpl() throws RemoteException {
 	    super();
@@ -42,19 +43,19 @@ public class MensageiroImpl extends UnicastRemoteObject implements Mensageiro {
             synchronized(this){
                 ArrayList listaMensagens = new ArrayList();
                 ArrayList listaMsgCripto = new ArrayList();
-                String nomeFilaP = new String(Cripto_Server.decriptaSim(nomeFila, chaveSim));
-                filasLER lerF = new filasLER(nomeFilaP, filamsg, listaMensagens);
-                lerF.setPriority(Thread.NORM_PRIORITY);
-                lerF.setName(nomeFilaP);
-                lerF.start();
-                if (lerF.getName().equalsIgnoreCase(nomeFilaP)){
-                    while (lerF.isAlive()){
-                        lerF.getState();
+                String nomeFilaDecriptado = new String(Cripto_Server.decriptarComChaveSimetrica(nomeFila, bytesChaveSimetrica));
+                filasLER lerFila = new filasLER(nomeFilaDecriptado, mapFilas, listaMensagens);
+                lerFila.setPriority(Thread.NORM_PRIORITY);
+                lerFila.setName(nomeFilaDecriptado);
+                lerFila.start();
+                if (lerFila.getName().equalsIgnoreCase(nomeFilaDecriptado)){
+                    while (lerFila.isAlive()){
+                        lerFila.getState();
                     }
                 }
-                for (int k=0;k<listaMensagens.size();k++){
-                    String dadosP = (String) listaMensagens.get(k);
-                    listaMsgCripto.add(k, Cripto_Server.encriptaSim(dadosP.getBytes(), chaveSim));
+                for (int i=0;i<listaMensagens.size();i++){
+                    String textoPuro = (String) listaMensagens.get(i);
+                    listaMsgCripto.add(i, Cripto_Server.encriptarComChaveSimetrica(textoPuro.getBytes(), bytesChaveSimetrica));
                }
                 return listaMsgCripto;
             }
@@ -68,17 +69,17 @@ public class MensageiroImpl extends UnicastRemoteObject implements Mensageiro {
      */
     @Override
        public String gravaFila(byte[] nomeFilaG, byte[] MSG){
-           synchronized(this){
-             String msgpuro = new String(Cripto_Server.decriptaSim(MSG, chaveSim));
-             String nomeFilaP = new String(Cripto_Server.decriptaSim(nomeFilaG,chaveSim));
+          synchronized(this){
+             String textoPuro = new String(Cripto_Server.decriptarComChaveSimetrica(MSG, bytesChaveSimetrica));
+             String nomeFilaPuro = new String(Cripto_Server.decriptarComChaveSimetrica(nomeFilaG,bytesChaveSimetrica));
              //System.out.println("Msg texto: " + msgpuro);
-             filasGRAVAR gravaF = new filasGRAVAR(nomeFilaP,filamsg,msgpuro);
-             gravaF.setPriority(Thread.MAX_PRIORITY);
-             gravaF.start();
+             FilasGRAVAR gravarFilas=  new FilasGRAVAR(nomeFilaPuro,mapFilas,textoPuro);
+             gravarFilas.setPriority(Thread.MAX_PRIORITY);
+             gravarFilas.start();
              //System.out.println("Gravando na " + nomeFilaG + " Mensagem " + MSG);
-             return "[Servidor] Mensagem gravada na: " + nomeFilaP;
-             }
+             return "[Servidor] Mensagem gravada na: " + nomeFilaPuro;
           }
+       }
     
     /**
      * Método para excluir (deletar) uma fila de mensagens.
@@ -88,9 +89,9 @@ public class MensageiroImpl extends UnicastRemoteObject implements Mensageiro {
     @Override
        public String deletaFila(byte[] nomeFilaG){
            synchronized(this){
-             String nomeFilaP = new String(Cripto_Server.decriptaSim(nomeFilaG,chaveSim));
-             if (filamsg.containsKey(nomeFilaP)){
-                 filamsg.remove(nomeFilaP);
+             String nomeFilaP = new String(Cripto_Server.decriptarComChaveSimetrica(nomeFilaG,bytesChaveSimetrica));
+             if (mapFilas.containsKey(nomeFilaP)){
+                 mapFilas.remove(nomeFilaP);
                  System.out.println("Servidor - " + nomeFilaP + " Excluída com sucesso!");
                  return "[Servidor] " + nomeFilaP + " Excluída com sucesso!";
              } else {
@@ -109,8 +110,8 @@ public class MensageiroImpl extends UnicastRemoteObject implements Mensageiro {
     @Override
     public PublicKey getChavePub() throws RemoteException {
         try {
-            Cripto_Server krps = new Cripto_Server();
-            return krps.getPublicKeyFromFile();
+            Cripto_Server criptoServer = new Cripto_Server();
+            return criptoServer.getPublicKeyFromFile();
         } catch (Exception ex) {
             Logger.getLogger(MensageiroImpl.class.getName()).log(Level.SEVERE, null, ex);
             return null;
@@ -121,15 +122,15 @@ public class MensageiroImpl extends UnicastRemoteObject implements Mensageiro {
     /**
      * Método para inicializar a variável global chaveSim, com o valor de uma chave
      * recebida do cliente que deseja se comunicar com o servidor de mensagens.
-     * @param chaveSimetrica
+     * @param bytesChaveSimetricaFromClient
      * @return 
      */
     
-    public boolean gravaChaveSim(byte[] chaveSimetrica) {
+    public boolean gravarChaveSimetricaNoServidor(byte[] bytesChaveSimetricaFromClient) {
         try {
             Cripto_Server krp = new Cripto_Server();            
             PrivateKey chavepriv = krp.getPrivateKeyFromFile();
-            chaveSim = Cripto_Server.decripta(chaveSimetrica,chavepriv);
+            this.bytesChaveSimetrica = Cripto_Server.decriptarComChavePrivada(bytesChaveSimetricaFromClient,chavepriv);
             return true;           
         } catch (Exception ex) {
             Logger.getLogger(MensageiroImpl.class.getName()).log(Level.SEVERE, null, ex);
@@ -143,17 +144,17 @@ public class MensageiroImpl extends UnicastRemoteObject implements Mensageiro {
      */
      
     public static synchronized MensageiroImpl getinstance() {
-        if(instanciaMSG == null){
+        if(mensageiroImpl == null){
             try {
-                instanciaMSG = new MensageiroImpl();
-                return instanciaMSG;
+                mensageiroImpl = new MensageiroImpl();
+                return mensageiroImpl;
             } catch (RemoteException ex) {
                 Logger.getLogger(MensageiroImpl.class.getName()).log(Level.SEVERE, null, ex);
                 System.out.println("Erro grave: " + ex.getMessage());
                 return null;
             }
         } else {
-            return instanciaMSG;
+            return mensageiroImpl;
         }
     }
 }

@@ -18,47 +18,52 @@ import java.util.Iterator;
 
 public class MensageiroCliente {
     
-        private static String servidor = "localhost";
+        private static final String servidorRMI = "localhost";
         private static String nomeFila = "";
         private static String mensagem = "";
         private static ArrayList listaMensagens = new ArrayList();
         private static int nrfilas = 5;
         private static int nrmsg = 3;
-        private static byte[] chs = null;
-        private static PublicKey pubKey = null;
+        private static byte[] chaveSimetrica = null;
+        private static PublicKey chavePublica = null;
 
 	public static void main( String args[] ) {
 		try {
-			Mensageiro msgs = (Mensageiro) Naming.lookup( "rmi://" + servidor + "/ServicoEnvelopeDigital" );
-                        String servicos[] = Naming.list("rmi://" + servidor);
+			Mensageiro mensageiro = (Mensageiro) Naming.lookup( "rmi://" + servidorRMI + "/ServicoEnvelopeDigital" );
+                        String servicos[] = Naming.list("rmi://" + servidorRMI);
                         System.out.println("Lista de serviços disponíveis:");
+                        
                         for (int i=0; i < servicos.length ; i++){
-                        System.out.println(servicos[i]);
+                            System.out.println(servicos[i]);
                         }
                         //Obtem chave pública do servidor
                         //
-                        pubKey = msgs.getChavePub();
+                        chavePublica = mensageiro.getChavePub();
                         //Cria uma chave simétrica de sessão e encripta com
                         //a chave pública obtida do servidor.
                         //
-                        chs = Cripto_Cliente.getChaveSimetrica();
-                        byte[] chsByte = Cripto_Cliente.encripta(chs, pubKey);
+                        chaveSimetrica = Cripto_Cliente.getChaveSimetrica();
+                        byte[] chaveSimetricaEncriptada = Cripto_Cliente.encriptarComChavePublica(chaveSimetrica, chavePublica);
                         //
                         //Envia a chave simétrica criptografada ao servidor
                         //e em caso de sucesso, inicia o processo de comunicação
                         //criando filas e mensagens.
                         //
-                        if (msgs.gravaChaveSim(chsByte)){
-                         //
-                         // Cria as filas e mensagens, encripta e grava no servidor
-                         //                           
-                         for (int i=1;i <= nrfilas; i++){
+                        if (!mensageiro.gravarChaveSimetricaNoServidor(chaveSimetricaEncriptada)){
+                            System.out.println("Erro ao enviar chave simétrica ao servidor!");
+                            System.exit(1);
+                        }
+                    
+                        //
+                        // Cria as filas e mensagens, encripta e grava no servidor
+                        //                           
+                        for (int i=1;i <= nrfilas; i++){
                             nomeFila = "Professor [" + i + "]";
                             for (int k=1;k<=nrmsg;k++){
                                 mensagem = " MSG nr: " + k;
-                                byte[] msgCript = Cripto_Cliente.encriptaSim(mensagem.getBytes(),chs);
-                                byte[] nomeFilaC = Cripto_Cliente.encriptaSim(nomeFila.getBytes(),chs);
-                                System.out.println(msgs.gravaFila(nomeFilaC, msgCript));
+                                byte[] bytesMensagemEncriptado = Cripto_Cliente.encriptarComChaveSimetrica(mensagem.getBytes(),chaveSimetrica);
+                                byte[] bytesNomeFilaEncriptado = Cripto_Cliente.encriptarComChaveSimetrica(nomeFila.getBytes(),chaveSimetrica);
+                                System.out.println(mensageiro.gravaFila(bytesNomeFilaEncriptado, bytesMensagemEncriptado));
                             }
                         }
                          //
@@ -66,16 +71,16 @@ public class MensageiroCliente {
                          //                           
                         for (int j=1;j<=nrfilas;j++){
                             nomeFila = "Professor [" + j + "]";
-                            byte[] nomeFilaC = Cripto_Cliente.encriptaSim(nomeFila.getBytes(),chs);
-                            listaMensagens = msgs.lerFila(nomeFilaC);
+                            byte[] bytesNomeFilaCriptografado = Cripto_Cliente.encriptarComChaveSimetrica(nomeFila.getBytes(),chaveSimetrica);
+                            listaMensagens = mensageiro.lerFila(bytesNomeFilaCriptografado);
                             System.out.print(nomeFila);
-                            byte[] msgCrip = null;
-                            Iterator it = listaMensagens.iterator();
+                            byte[] bytesMensagemEncriptado = null;
+                            Iterator iterator = listaMensagens.iterator();
                             System.out.print(" - msg decriptadas: ");
-                            while (it.hasNext()){
-                                msgCrip = (byte[]) it.next();
-                                String msgPuro = new String(Cripto_Cliente.decriptaSim(msgCrip,chs));
-                                System.out.print("["+ msgPuro + "]");
+                            while (iterator.hasNext()){
+                                bytesMensagemEncriptado = (byte[]) iterator.next();
+                                String mensagemDecriptada = new String(Cripto_Cliente.decriptarComChaveSimetrica(bytesMensagemEncriptado,chaveSimetrica));
+                                System.out.print("["+ mensagemDecriptada + "]");
                             }
                             System.out.print("\n");
                         }
@@ -84,13 +89,10 @@ public class MensageiroCliente {
                         //
                         for (int k=1;k<=nrfilas;k++){
                             nomeFila = "Professor [" + k + "]";
-                            byte[] nomeFilaC = Cripto_Cliente.encriptaSim(nomeFila.getBytes(),chs);
-                            System.out.println("Excluíndo: " + nomeFila + " " + msgs.deletaFila(nomeFilaC));
+                            byte[] bytesNomeFilaEncriptado = Cripto_Cliente.encriptarComChaveSimetrica(nomeFila.getBytes(),chaveSimetrica);
+                            System.out.println("Excluíndo: " + nomeFila + " " + mensageiro.deletaFila(bytesNomeFilaEncriptado));
                         }
-                      } else {
-                         System.out.println("Erro ao enviar chave simétrica ao servidor!");
-                         System.exit(1);
-                        }
+                        
 		}
 		catch( MalformedURLException e ) {
 			System.out.println();
@@ -106,7 +108,7 @@ public class MensageiroCliente {
 		}
 		catch( Exception e ) {
 			System.out.println();
-			System.out.println( "Exception: " + e.toString() );
+			System.out.println( "Exception: " + e.getCause());
 		}
 	}
 }

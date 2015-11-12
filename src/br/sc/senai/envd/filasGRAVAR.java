@@ -5,13 +5,13 @@ import java.util.ArrayList;
 import java.util.Map;
 
 
-public class filasGRAVAR extends Thread{
+public class FilasGRAVAR extends Thread{
     
     private Map<String,ArrayList> filas;
     private String nomeFILA = "";
     private String Mensagem = null;
     
-    public filasGRAVAR(String nomeFila, Map<String,ArrayList> filasMSG, String MSG){
+    public FilasGRAVAR(String nomeFila, Map<String,ArrayList> filasMSG, String MSG){
         super(nomeFila);
         filas = filasMSG;
         nomeFILA= nomeFila;

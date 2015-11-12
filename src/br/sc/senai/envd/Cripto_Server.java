@@ -6,8 +6,7 @@ package br.sc.senai.envd;
  * Esta classe atende somente ao servidor de comunicação. * 
  * 
  */
-import java.io.InputStream;
-import java.security.InvalidAlgorithmParameterException;
+import java.io.InputStream; 
 import java.security.InvalidKeyException;
 import java.security.Key;
 import java.security.KeyStore;
@@ -19,7 +18,6 @@ import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
-import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 
     /**
@@ -31,13 +29,13 @@ import javax.crypto.spec.SecretKeySpec;
     */
 
 public class Cripto_Server {
-    
-       private final InputStream keystore = getClass().getResourceAsStream("/conf/envdigital.jks");
-       private static final String alias = "envdigital"; 
-       private static final String pwd = "123456";
-
-       public Cripto_Server(){
-     }
+  
+    private final InputStream keystore = getClass().getResourceAsStream("/conf/envdigital.jks");
+    private static final String alias = "envdigital"; 
+    private static final String password = "123456";
+       
+    public Cripto_Server(){
+    }
     /**
      Método que decripta dados, encriptados pela chave Pública
      contida no Keystore.
@@ -49,47 +47,42 @@ public class Cripto_Server {
     /**
      * Método que decripta dados, encriptados pela chave Pública
      contida no Keystore.Após decriptado, retorna um array de bytes dos dados.
-     * @param dados , chavePriv
-     * @param chavePriv
+     * @param byteTextoCriptografado , chavePriv
+     * @param chavePrivada
      * @return
      */
-    public static byte[] decripta (byte[] dados, PrivateKey chavePriv){
+    public static byte[] decriptarComChavePrivada (byte[] byteTextoCriptografado, PrivateKey chavePrivada){
         try {
-        Cipher cifra = Cipher.getInstance("RSA");
-        cifra.init(Cipher.DECRYPT_MODE, chavePriv);
-        System.out.println("Crypto_Server: Tam bytes decriptados: " + dados.length);
-        return cifra.doFinal(dados);
+            Cipher cifra = Cipher.getInstance(Cripto_Cliente.ALGORITMO_ASSIMETRICO);
+            cifra.init(Cipher.DECRYPT_MODE, chavePrivada);
+            System.out.println("Crypto_Server: Tam bytes decriptados: " + byteTextoCriptografado.length);
+            return cifra.doFinal(byteTextoCriptografado);
         }
         catch ( NoSuchAlgorithmException e ) {
-		System.out.println("Classe Crypto_Server - Erro no Algoritmo RSA na decriptação..." + e.getMessage());
-                return null; //"Erro decriptação!".getBytes();
+            System.out.println("Classe Crypto_Server - Erro no Algoritmo RSA na decriptação..." + e.getMessage());
         }  catch (NoSuchPaddingException e) {
             System.out.println("Classe Crypto_Server - Erro no Padding do RSA na decriptação..." + e.getMessage());
-            return null; //"Erro decriptação!".getBytes();
-           } catch (InvalidKeyException e) {
-               System.out.println("Classe Crypto_Server - Erro na Chave RSA na  decriptação..." + e.getMessage());
-               return null; //"Erro decriptação!".getBytes();
-           } catch (IllegalBlockSizeException e) {
-               System.out.println("Classe Crypto_Server - Erro no tamanho de Bloco RSA na decriptação..." + e.getMessage());
-               return null; //"Erro decriptação!".getBytes();
-           } catch (BadPaddingException e) {
-               System.out.println("Classe Crypto_Server - Erro Padding inválido no RSA para decriptação..." + e.getMessage());
-               return null; //"Erro decriptação!".getBytes();
-           }
-       }
-     
+        } catch (InvalidKeyException e) {
+            System.out.println("Classe Crypto_Server - Erro na Chave RSA na  decriptação..." + e.getMessage());
+        } catch (IllegalBlockSizeException e) {
+            System.out.println("Classe Crypto_Server - Erro no tamanho de Bloco RSA na decriptação..." + e.getMessage());
+        } catch (BadPaddingException e) {
+            System.out.println("Classe Crypto_Server - Erro Padding inválido no RSA para decriptação..." + e.getMessage());
+        }
+        return null;
+    }
     
-        /**
-         Método para ler a chave Privada do Keystore
-         Retorna um objeto chave Privada PrivateKey
-        * @return
-        * @throws Exception 
-        */
-        public PrivateKey getPrivateKeyFromFile() throws Exception {
+    /**
+     * Método para ler a chave Privada do Keystore
+     * Retorna um objeto chave Privada PrivateKey
+     * @return
+     * @throws Exception 
+    */
+    public PrivateKey getPrivateKeyFromFile() throws Exception {
         KeyStore ks = KeyStore.getInstance ( "JKS" );
-        ks.load( keystore, pwd.toCharArray());
+        ks.load( keystore, password.toCharArray());
         keystore.close();
-        Key key = ks.getKey( alias, pwd.toCharArray() );
+        Key key = ks.getKey( alias, password.toCharArray() );
         if( key instanceof PrivateKey ) {
             return (PrivateKey) key;
         }
@@ -103,78 +96,54 @@ public class Cripto_Server {
         */
     
     public PublicKey getPublicKeyFromFile() throws Exception {
-        KeyStore ks = KeyStore.getInstance ( "JKS" );
-        ks.load( keystore, pwd.toCharArray() );
-        Certificate c = ks.getCertificate( alias );
-        PublicKey p = c.getPublicKey();
-        System.out.println("Chave Pública: " + p.toString());
-        return p;
-	}
+        KeyStore keyStore = KeyStore.getInstance ( "JKS" );
+        keyStore.load( keystore, password.toCharArray() );
+        Certificate certificado = keyStore.getCertificate( alias );
+        PublicKey chavePublica = certificado.getPublicKey();
+        System.out.println("Chave Pública: " + chavePublica.toString());
+        return chavePublica;
+    }
     
     /**
      * Método para encriptar dados com a chave Simétrica.
-     * @param textoP
-     * @param chaveS
+     * @param bytesTextoPuro
+     * @param bytesChaveSimetrica
      * @return bytes encriptados
      */
-    public static byte[] encriptaSim(byte[] textoP, byte[] chaveS){
+    public static byte[] encriptarComChaveSimetrica(byte[] bytesTextoPuro, byte[] bytesChaveSimetrica){
          try {
-             Cipher cifra = Cipher.getInstance("AES/CBC/PKCS5Padding");
-             IvParameterSpec ivspec = new IvParameterSpec (new byte[16]);
-             cifra.init(Cipher.ENCRYPT_MODE, new SecretKeySpec (chaveS,"AES"),ivspec);
-             return cifra.doFinal(textoP);
+             Cipher cifra = Cipher.getInstance(Cripto_Cliente.ALGORITMO_SIMETRICO);
+             cifra.init(Cipher.ENCRYPT_MODE, new SecretKeySpec (bytesChaveSimetrica,Cripto_Cliente.CHAVE_ALGORITMO_SIMETRICO));
+             return cifra.update(bytesTextoPuro);
          } catch (NoSuchAlgorithmException ex){
-           System.out.println("Erro no Algoritmo de  decriptação simétrica, Verifique! " + ex.getMessage());
-              return null;
+            System.out.println("Erro no Algoritmo de  decriptação simétrica, Verifique! " + ex.getMessage());
          } catch (NoSuchPaddingException ex) {
-             System.out.println("Erro no Padding da decriptação simétrica, Verifique! " + ex.getMessage());
-             return null;
-           } catch (InvalidKeyException ex) {
-               System.out.println("Erro na Chave simétrica, Verifique! " + ex.getMessage());
-               return null;
-           } catch (InvalidAlgorithmParameterException ex) {
-               System.out.println("Erro nos parâmtros para decriptação simétrica, Verifique! " + ex.getMessage());
-               return null;
-           } catch (IllegalBlockSizeException ex) {
-               System.out.println("Erro no tamanho de blocos para decriptação simétrica, Verifique! " + ex.getMessage());
-               return null;
-           } catch (BadPaddingException ex) {
-               System.out.println("Erro no Padding ou Inválido para decriptação simétrica, Verifique! " + ex.getMessage());
-               return null;
-           }
+            System.out.println("Erro no Padding da decriptação simétrica, Verifique! " + ex.getMessage());
+         } catch (InvalidKeyException ex) {
+            System.out.println("Erro na Chave simétrica, Verifique! " + ex.getMessage());
+         }
+        return null;
      }
     /**
      * Método para decriptar dados com uma chave Simétrica.
-     * @param textoC
-     * @param chaveSeg
+     * @param bytesTextoCriptografado
+     * @param bytesChaveSimetrica
      * @return bytes decriptados.
      */
-    public static byte[] decriptaSim(byte[] textoC, byte[] chaveSeg){
+    public static byte[] decriptarComChaveSimetrica(byte[] bytesTextoCriptografado, byte[] bytesChaveSimetrica){
          try {
-             Cipher cifra = Cipher.getInstance("AES/CBC/PKCS5Padding");
-             IvParameterSpec ivspec = new IvParameterSpec (new byte[16]);             
-             cifra.init(Cipher.DECRYPT_MODE, new SecretKeySpec (chaveSeg,"AES"),ivspec);
-             return cifra.doFinal(textoC);             
-         } 
+             Cipher cifra = Cipher.getInstance(Cripto_Cliente.ALGORITMO_SIMETRICO);
+             SecretKeySpec chaveSimetrica = new SecretKeySpec (bytesChaveSimetrica,Cripto_Cliente.CHAVE_ALGORITMO_SIMETRICO);
+             cifra.init(Cipher.DECRYPT_MODE, chaveSimetrica);
+             return cifra.update(bytesTextoCriptografado);             
+         }
          catch (NoSuchAlgorithmException ex){
            System.out.println("Erro no Algoritmo de  decriptação simétrica, Verifique! " + ex.getMessage());
-              return null;
          } catch (NoSuchPaddingException ex) {
-             System.out.println("Erro no Padding da decriptação simétrica, Verifique! " + ex.getMessage());
-             return null;
-           } catch (InvalidKeyException ex) {
-               System.out.println("Erro na Chave simétrica, Verifique! " + ex.getMessage());
-               return null;
-           } catch (InvalidAlgorithmParameterException ex) {
-               System.out.println("Erro nos parâmtros para decriptação simétrica, Verifique! " + ex.getMessage());
-               return null;
-           } catch (IllegalBlockSizeException ex) {
-               System.out.println("Erro no tamanho de blocos para decriptação simétrica, Verifique! " + ex.getMessage());
-               return null;
-           } catch (BadPaddingException ex) {
-               System.out.println("Erro no Padding ou Inválido para decriptação simétrica, Verifique! " + ex.getMessage());
-               return null;
-           }
+            System.out.println("Erro no Padding da decriptação simétrica, Verifique! " + ex.getMessage());
+         } catch (InvalidKeyException ex) {
+            System.out.println("Erro na Chave simétrica, Verifique! " + ex.getMessage());
+         }
+        return null;
      }
-    
 }

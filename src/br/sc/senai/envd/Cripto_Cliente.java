@@ -11,71 +11,71 @@ import java.security.PublicKey;
 import javax.crypto.Cipher;
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
-import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 
-
 public class Cripto_Cliente {
+    
+    public static final String ALGORITMO_ASSIMETRICO = "RSA";
+    public static final String ALGORITMO_SIMETRICO = "RC4";
+    public static final String CHAVE_ALGORITMO_SIMETRICO = "RC4";
 
-  public Cripto_Cliente(){
-     }
+    public Cripto_Cliente(){
+    }
     /**
      Método que encripta dados, através de uma chave Pública
      recebida via RMI
      Após decriptado, retorna um array de bytes dos dados.
-    * @param dados e chavePub
+    * @param bytesTextoPuro e chavePub
     * @return 
     */
 
-     public static byte[] encripta (byte[] dados, PublicKey chavePub){
+    public static byte[] encriptarComChavePublica (byte[] bytesTextoPuro, PublicKey chavePublica){
         try {
-        Cipher cifra = Cipher.getInstance("RSA");
-        cifra.init(Cipher.ENCRYPT_MODE, chavePub);
-        System.out.println("[Cripto_Cliente] Tam bytes encriptados: " + dados.length);
-        return cifra.doFinal(dados);
+            Cipher cifra = Cipher.getInstance(ALGORITMO_ASSIMETRICO);
+            cifra.init(Cipher.ENCRYPT_MODE, chavePublica);
+            System.out.println("[Cripto_Cliente] Tam bytes encriptados: " + bytesTextoPuro.length);
+            return cifra.doFinal(bytesTextoPuro);
         }
         catch ( Exception e ) {
-		System.out.println("[Cripto_Cliente] Erro na encriptação..." + e.getMessage());
-                return null; //"Erro decriptação!".getBytes();
+            System.out.println("[Cripto_Cliente] Erro na encriptação..." + e.getMessage());                
         }
-       }
+        return null; //"Erro decriptação!".getBytes();
+     }
        
     /**
      * Método para encriptar dados com uma chave simétrica.
-     * @param textoP e chaveS
-     * @param chaveS
+     * @param bytesTextoPuro e chaveS
+     * @param bytesChaveSimetrica
      * @return 
      */   
-    public static byte[] encriptaSim(byte[] textoP, byte[] chaveS){
+    public static byte[] encriptarComChaveSimetrica(byte[] bytesTextoPuro, byte[] bytesChaveSimetrica){
          try {
-             Cipher cifra = Cipher.getInstance("AES/CBC/PKCS5Padding");
-             IvParameterSpec ivspec = new IvParameterSpec (new byte[16]);
-             cifra.init(Cipher.ENCRYPT_MODE, new SecretKeySpec (chaveS,"AES"),ivspec);
-             return cifra.doFinal(textoP);
+             Cipher cifra = Cipher.getInstance(ALGORITMO_SIMETRICO);
+             cifra.init(Cipher.ENCRYPT_MODE, new SecretKeySpec (bytesChaveSimetrica,CHAVE_ALGORITMO_SIMETRICO));
+             return cifra.update(bytesTextoPuro);
          } 
          catch (Exception ex){
            System.out.println("Erro de encriptação simétrica, Verifique! " + ex.getMessage());
-              return null;
          }
+         return null;
      }
    /**
     * Método para decriptar dados com uma chave simétrica
-    * @param textoC
-    * @param chaveSeg
+    * @param bytesTextoCriptografado
+    * @param bytesChaveSimetrica
     * @return 
     */
-   public static byte[] decriptaSim(byte[] textoC, byte[] chaveSeg){
+   public static byte[] decriptarComChaveSimetrica(byte[] bytesTextoCriptografado, byte[] bytesChaveSimetrica){
          try {
-             Cipher cifra = Cipher.getInstance("AES/CBC/PKCS5Padding");
-             IvParameterSpec ivspec = new IvParameterSpec (new byte[16]);
-             cifra.init(Cipher.DECRYPT_MODE, new SecretKeySpec (chaveSeg,"AES"),ivspec);
-             return cifra.doFinal(textoC);             
+             Cipher cifra = Cipher.getInstance(ALGORITMO_SIMETRICO);
+             cifra.init(Cipher.DECRYPT_MODE, new SecretKeySpec (bytesChaveSimetrica,CHAVE_ALGORITMO_SIMETRICO));
+             return cifra.update(bytesTextoCriptografado);             
          } 
          catch (Exception ex){
            System.out.println("Erro na decriptação simétrica, Verifique! " + ex.getMessage());
-              return null;
          }
-     }
+         return null;
+    }
     /**
      * Método para geração de uma chave simétrica de sessão, a qual será usada nas
      * comunicações entre o cliente e o servidor.
@@ -84,14 +84,12 @@ public class Cripto_Cliente {
      * @throws NoSuchAlgorithmException 
      */   
     public static byte[] getChaveSimetrica() throws NoSuchAlgorithmException {
-        KeyGenerator keygen = KeyGenerator.getInstance("AES");
+        KeyGenerator keygen = KeyGenerator.getInstance(CHAVE_ALGORITMO_SIMETRICO);
         keygen.init(128);
         SecretKey chaveSim = keygen.generateKey();
         if (chaveSim instanceof SecretKey){
            return chaveSim.getEncoded();
-        } else {
-            return null;
         }
+        return null;       
     }
-    
 }
