@@ -45,7 +45,7 @@ public class MensageiroCliente {
             //Cria uma chave simétrica de sessão e encripta com
             //a chave pública obtida do servidor.
             chaveSimetrica = Cripto_Cliente.getChaveSimetrica();
-            byte[] chaveSimetricaEncriptada = Cripto_Cliente.encriptarComChavePublica(chaveSimetrica, chavePublica);
+            byte[] chaveSimetricaEncriptada = Cripto_Cliente.encriptaComChavePublica(chaveSimetrica, chavePublica);
             //Envia a chave simétrica criptografada ao servidor
             //e em caso de sucesso, inicia o processo de comunicação
             //criando filas e mensagens.
@@ -59,8 +59,8 @@ public class MensageiroCliente {
                 nomeFila = "Professor [" + i + "]";
                 for (int k = 1; k <= NUMERO_MENSAGENS; k++) {
                     mensagem = " MSG nr: " + k;
-                    byte[] bytesMensagemEncriptado = Cripto_Cliente.encriptarComChaveSimetrica(mensagem.getBytes(), chaveSimetrica);
-                    byte[] bytesNomeFilaEncriptado = Cripto_Cliente.encriptarComChaveSimetrica(nomeFila.getBytes(), chaveSimetrica);
+                    byte[] bytesMensagemEncriptado = Cripto_Cliente.encriptaComChaveSimetrica(mensagem.getBytes(), chaveSimetrica);
+                    byte[] bytesNomeFilaEncriptado = Cripto_Cliente.encriptaComChaveSimetrica(nomeFila.getBytes(), chaveSimetrica);
                     System.out.println(mensageiro.gravaFila(bytesNomeFilaEncriptado, bytesMensagemEncriptado));
                 }
             }
@@ -68,7 +68,7 @@ public class MensageiroCliente {
             //                           
             for (int j = 1; j <= NUMERO_FILAS; j++) {
                 nomeFila = "Professor [" + j + "]";
-                byte[] bytesNomeFilaCriptografado = Cripto_Cliente.encriptarComChaveSimetrica(nomeFila.getBytes(), chaveSimetrica);
+                byte[] bytesNomeFilaCriptografado = Cripto_Cliente.encriptaComChaveSimetrica(nomeFila.getBytes(), chaveSimetrica);
                 listaMensagens = mensageiro.lerFila(bytesNomeFilaCriptografado);
                 System.out.print(nomeFila);
                 byte[] bytesMensagemEncriptado;
@@ -76,7 +76,7 @@ public class MensageiroCliente {
                 System.out.print(" - msg decriptadas: ");
                 while (iterator.hasNext()) {
                     bytesMensagemEncriptado = (byte[]) iterator.next();
-                    String mensagemDecriptada = new String(Cripto_Cliente.decriptarComChaveSimetrica(bytesMensagemEncriptado, chaveSimetrica));
+                    String mensagemDecriptada = new String(Cripto_Cliente.decriptaComChaveSimetrica(bytesMensagemEncriptado, chaveSimetrica));
                     System.out.print("[" + mensagemDecriptada + "]");
                 }
                 System.out.print("\n");
@@ -85,7 +85,7 @@ public class MensageiroCliente {
             //
             for (int k = 1; k <= NUMERO_FILAS; k++) {
                 nomeFila = "Professor [" + k + "]";
-                byte[] bytesNomeFilaEncriptado = Cripto_Cliente.encriptarComChaveSimetrica(nomeFila.getBytes(), chaveSimetrica);
+                byte[] bytesNomeFilaEncriptado = Cripto_Cliente.encriptaComChaveSimetrica(nomeFila.getBytes(), chaveSimetrica);
                 System.out.println("Excluindo: " + nomeFila + " " + mensageiro.deletaFila(bytesNomeFilaEncriptado));
             }
 

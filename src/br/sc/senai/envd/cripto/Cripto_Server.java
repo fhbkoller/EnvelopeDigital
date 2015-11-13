@@ -52,7 +52,7 @@ public class Cripto_Server {
      * @param chavePrivada
      * @return
      */
-    public static byte[] decriptarComChavePrivada (byte[] byteTextoCriptografado, PrivateKey chavePrivada){
+    public static byte[] decriptaComChavePrivada (byte[] byteTextoCriptografado, PrivateKey chavePrivada){
         try {
             Cipher cifra = Cipher.getInstance(Cripto_Cliente.TIPO_ASSIMETRICO);
             cifra.init(Cipher.DECRYPT_MODE, chavePrivada);

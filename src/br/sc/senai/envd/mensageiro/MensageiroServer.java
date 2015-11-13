@@ -22,6 +22,7 @@ public class MensageiroServer {
     private static void createServer() {
         try {
             Mensageiro mensageiro = MensageiroImpl.getinstance();
+            LocateRegistry.createRegistry(1099);
             LocateRegistry.getRegistry(SERVIDOR_RMI, 1099).bind("ServicoEnvelopeDigital", mensageiro);
             System.out.println("MensageiroServer - Servidor RMI iniciado na porta 1099\n"
                     + "Servico Envelope com criptografia RSA e AES no ar!\n");

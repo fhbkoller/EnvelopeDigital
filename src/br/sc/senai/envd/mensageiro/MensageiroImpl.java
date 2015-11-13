@@ -139,7 +139,7 @@ public class MensageiroImpl extends UnicastRemoteObject implements Mensageiro {
         try {
             Cripto_Server krp = new Cripto_Server();
             PrivateKey chavepriv = krp.getPrivateKeyFromFile();
-            MensageiroImpl.bytesChaveSimetrica = Cripto_Server.decriptarComChavePrivada(bytesChaveSimetricaFromClient, chavepriv);
+            MensageiroImpl.bytesChaveSimetrica = Cripto_Server.decriptaComChavePrivada(bytesChaveSimetricaFromClient, chavepriv);
             return true;
         } catch (Exception ex) {
             Logger.getLogger(MensageiroImpl.class.getName()).log(Level.SEVERE, null, ex);
