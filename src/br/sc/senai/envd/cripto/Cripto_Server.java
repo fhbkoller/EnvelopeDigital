@@ -6,7 +6,6 @@ package br.sc.senai.envd.cripto;
  * Esta classe atende somente ao servidor de comunicação. * 
  * 
  */
-import br.sc.senai.envd.cripto.Cripto_Cliente;
 import java.io.InputStream; 
 import java.security.InvalidKeyException;
 import java.security.Key;
@@ -32,11 +31,10 @@ import javax.crypto.spec.SecretKeySpec;
 public class Cripto_Server {
   
     private final InputStream keystore = getClass().getResourceAsStream("/conf/envdigital.jks");
-    private static final String alias = "envdigital"; 
-    private static final String password = "123456";
+    private static String alias; 
+    private static String password;
        
-    public Cripto_Server(){
-    }
+    public Cripto_Server(){}
     /**
      Método que decripta dados, encriptados pela chave Pública
      contida no Keystore.
@@ -147,4 +145,20 @@ public class Cripto_Server {
          }
         return null;
      }
+    
+    public boolean nullAlias(){
+        return alias == null;
+    }
+    
+    public boolean nullPassword(){
+        return password == null;
+    }
+    
+    public void setAlias(String alias){
+        Cripto_Server.alias = alias;
+    }
+    
+    public void setPassword(String password){
+        Cripto_Server.password = password;
+    }
 }

@@ -22,6 +22,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JOptionPane;
 
 public class MensageiroImpl extends UnicastRemoteObject implements Mensageiro {
 
@@ -154,6 +155,13 @@ public class MensageiroImpl extends UnicastRemoteObject implements Mensageiro {
      */
 
     public static synchronized MensageiroImpl getinstance() {
+        Cripto_Server criptoServer = new Cripto_Server();
+        if(criptoServer.nullAlias()){
+            criptoServer.setAlias(JOptionPane.showInputDialog("Digite o alias do KeyStore:"));
+        }
+        if(criptoServer.nullPassword()){
+            criptoServer.setPassword(JOptionPane.showInputDialog("Digite a senha do KeyStore:"));
+        }
         if (mensageiroImpl == null) {
             try {
                 mensageiroImpl = new MensageiroImpl();
